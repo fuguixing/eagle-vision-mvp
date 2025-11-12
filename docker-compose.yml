@@ -1,0 +1,37 @@
+version: "3.9"
+services:
+  mongo:
+    image: mongo:4.4
+    container_name: eaglevision-mongo
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+    ports:
+      - "27017:27017"
+
+  backend:
+    build: ./backend
+    container_name: eaglevision-backend
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/eaglevision
+      - PORT=8080
+      - CORS_ORIGIN=http://localhost:3000
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongo
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: eaglevision-frontend
+    environment:
+      - NEXT_PUBLIC_API_BASE=http://backend:8080/api
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  mongo-data:
